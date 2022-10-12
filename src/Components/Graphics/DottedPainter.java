@@ -3,8 +3,8 @@ package Components.Graphics;
 import java.awt.image.BufferedImage;
 
 public class DottedPainter extends AbstractPainter {
-    public DottedPainter(int pixelSize, BufferedImage img) {
-        super(pixelSize, img);
+    public DottedPainter(int pixelSize) {
+        super(pixelSize);
     }
 
     @Override

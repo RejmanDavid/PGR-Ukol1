@@ -3,8 +3,8 @@ package Components.Graphics;
 import java.awt.image.BufferedImage;
 
 public class StraightPainter extends AbstractPainter {
-    public StraightPainter(int pixelSize, BufferedImage img) {
-        super(pixelSize, img);
+    public StraightPainter(int pixelSize) {
+        super(pixelSize);
     }
 
     @Override
