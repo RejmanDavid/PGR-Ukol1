@@ -14,10 +14,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-enum Painter {
-    STRAIGHT,
-    DOTTED
-}enum Shape {
+enum Shape {
     LINE,
     TRIANGLE,
     POLYGON
@@ -31,7 +28,7 @@ public class PaintWindow extends JFrame {
     int pixelSize = 20;
     int selectedColor = 0xFFFFFF;
     int originalX,originalY;
-    Painter selectedPainter = Painter.STRAIGHT;
+    AbstractPainter painter;
     Shape selectedShape = Shape.LINE;
     byte triangleStage;//TODO: use polygonPoints instead and finish up selecting Painter
     List<int[]> polygonPoints = new ArrayList<int[]>();
@@ -53,6 +50,7 @@ public class PaintWindow extends JFrame {
                 g.drawImage(shownImg,0,0,null);
             }
         };
+        painter = new StraightPainter(20);
 
         mainPanel.setPreferredSize(new Dimension(width,height));
         add(mainPanel,BorderLayout.CENTER);
@@ -60,38 +58,23 @@ public class PaintWindow extends JFrame {
         mainPanel.requestFocus();
         mainPanel.requestFocusInWindow();
         mainPanel.addMouseListener(new MouseAdapter() {
-            /*@Override
-            public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                if (selectedShape != Shape.LINE){return;}
-                originalX = e.getX()/pixelSize;
-                originalY = e.getY()/pixelSize;
-            }*/
-
-            /*@Override
-            public void mouseReleased(MouseEvent e) {
-                super.mouseReleased(e);
-                if (selectedShape != Shape.LINE){return;}
-                img.setData(shownImg.getData());
-            }*/
-
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                if(selectedShape == Shape.LINE||e.getX()/pixelSize+pixelSize>img.getWidth()||e.getY()/pixelSize+pixelSize>img.getHeight()){return;}//in case i cant fit border pixels
+                img.setData(shownImg.getData());
+                polygonPoints.add(new int[]{e.getX()/pixelSize,e.getY()/pixelSize});
+            }
+        });
+
+        mainPanel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {//projection
+                super.mouseMoved(e);
 
                 BufferedImage newImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-                if (polygonPoints.size() == 0){newImg.setData(img.getData());}
+                newImg.setData(img.getData());
+                painter.setImg(newImg);
 
-                AbstractPainter painter = null;
-                switch (selectedPainter){
-                    case STRAIGHT:
-                        painter = new StraightPainter(pixelSize, newImg);
-                        break;
-                    case DOTTED:
-                        painter = new DottedPainter(pixelSize,newImg);
-                        break;
-                }
                 int x = e.getX()/pixelSize;
                 int y = e.getY()/pixelSize;
 
@@ -100,56 +83,22 @@ public class PaintWindow extends JFrame {
                         case 0://start
                             triangleStage++;
                             break;
-                        case 1://end
-                            triangleStage++;
-                            break;
-                        case 2://side
-                            triangleStage = 0;
-                            break;
                     }
                 }else{//POLYGON
-                    polygonPoints.add(new int[]{x,y});
 
                     for (int i = 0; i < polygonPoints.size(); i++){
                         if (polygonPoints.size() > 2 && i != polygonPoints.size()-1) {
                             painter.Draw(polygonPoints.get(i)[0],polygonPoints.get(i)[1],polygonPoints.get(i+1)[0],polygonPoints.get(i+1)[1],selectedColor);
-                        }else if (polygonPoints.size() > 1) {
+                            System.out.println("connecting "+i+" with "+(i+1));
+                        }else /*if (polygonPoints.size() > 1)*/ {
                             painter.Draw(polygonPoints.get(i)[0],polygonPoints.get(i)[1],polygonPoints.get(0)[0],polygonPoints.get(0)[1],selectedColor);
-                        }else{
+                        }/*else{
                             painter.Draw(x,y,selectedColor);
-                        }
+                        }*/
                     }
                     shownImg.setData(newImg.getData());
                 }
-                repaint();
-            }
-        });
 
-        mainPanel.addMouseMotionListener(new MouseAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {//projection
-                super.mouseDragged(e);
-                if(e.getX()/pixelSize+pixelSize>img.getWidth()||e.getY()/pixelSize+pixelSize>img.getHeight()){return;}//in case i cant fit border pixels
-
-                BufferedImage newImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-                newImg.setData(img.getData());
-
-                switch (selectedShape){
-                    case LINE:
-                        switch (selectedPainter){
-                            case STRAIGHT:
-                                StraightPainter straightRenderer = new StraightPainter(pixelSize,newImg);
-                                shownImg.setData(straightRenderer.Draw(originalX,originalY,e.getX()/pixelSize,e.getY()/pixelSize,selectedColor).getData());
-                                break;
-                            case DOTTED:
-                                DottedPainter dottedRenderer = new DottedPainter(pixelSize,newImg);
-                                shownImg.setData(dottedRenderer.Draw(originalX,originalY,e.getX()/pixelSize,e.getY()/pixelSize,selectedColor).getData());
-                                break;
-                        }
-                        break;
-                    case TRIANGLE:
-                        break;
-                }
                 repaint();
             }
         });
@@ -181,7 +130,7 @@ public class PaintWindow extends JFrame {
         straightLineButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selectedPainter = Painter.STRAIGHT;
+                painter = new StraightPainter(pixelSize);
             }
         });
 
@@ -190,7 +139,7 @@ public class PaintWindow extends JFrame {
         dottedLineButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selectedPainter = Painter.DOTTED;
+                painter = new DottedPainter(pixelSize);
             }
         });
 

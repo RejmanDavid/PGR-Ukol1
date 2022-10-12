@@ -7,8 +7,10 @@ public abstract class AbstractPainter {
     int pixelSize;
     BufferedImage img;
 
-    public AbstractPainter(int pixelSize, BufferedImage img) {
+    public AbstractPainter(int pixelSize) {
         this.pixelSize = pixelSize;
+    }
+    public void setImg(BufferedImage img){
         this.img = img;
     }
     public BufferedImage Draw(int x1, int y1, int x2, int y2, int color){
