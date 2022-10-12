@@ -1,8 +1,8 @@
 package Components.Window;
 
-import Components.Graphics.AbstractPainter;
-import Components.Graphics.StraightPainter;
-import Components.Graphics.DottedPainter;
+import Components.Painters.AbstractPainter;
+import Components.Painters.StraightPainter;
+import Components.Painters.DottedPainter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,10 +27,8 @@ public class PaintWindow extends JFrame {
     JPanel sidePanel;
     int pixelSize = 20;
     int selectedColor = 0xFFFFFF;
-    int originalX,originalY;
     AbstractPainter painter;
     Shape selectedShape = Shape.LINE;
-    byte triangleStage;//TODO: use polygonPoints instead and finish up selecting Painter
     List<int[]> polygonPoints = new ArrayList<int[]>();
 
     public PaintWindow(String title, int width, int height){
@@ -52,6 +50,7 @@ public class PaintWindow extends JFrame {
         };
         painter = new StraightPainter(20);
 
+
         mainPanel.setPreferredSize(new Dimension(width,height));
         add(mainPanel,BorderLayout.CENTER);
 
@@ -59,47 +58,37 @@ public class PaintWindow extends JFrame {
         mainPanel.requestFocusInWindow();
         mainPanel.addMouseListener(new MouseAdapter() {
             @Override
+            public void mouseReleased(MouseEvent e) {//confirmation
+                super.mouseReleased(e);
+                polygonPoints.add(new int[]{e.getX()/pixelSize,e.getY()/pixelSize});
+                switch (selectedShape){
+                    case LINE:
+                        if (polygonPoints.size()==2){
+                            polygonPoints.clear();
+                            img.setData(shownImg.getData());
+                        }
+                        break;
+                    case TRIANGLE:
+                        if (polygonPoints.size()==3){
+                            polygonPoints.clear();
+                            img.setData(shownImg.getData());
+                        }
+                        break;
+                }
+            }
+
+            @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                img.setData(shownImg.getData());
-                polygonPoints.add(new int[]{e.getX()/pixelSize,e.getY()/pixelSize});
+                Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
             }
         });
 
         mainPanel.addMouseMotionListener(new MouseAdapter() {
             @Override
-            public void mouseMoved(MouseEvent e) {//projection
-                super.mouseMoved(e);
-
-                BufferedImage newImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-                newImg.setData(img.getData());
-                painter.setImg(newImg);
-
-                int x = e.getX()/pixelSize;
-                int y = e.getY()/pixelSize;
-
-                if(selectedShape == Shape.TRIANGLE) {
-                    switch (triangleStage) {
-                        case 0://start
-                            triangleStage++;
-                            break;
-                    }
-                }else{//POLYGON
-
-                    for (int i = 0; i < polygonPoints.size(); i++){
-                        if (polygonPoints.size() > 2 && i != polygonPoints.size()-1) {
-                            painter.Draw(polygonPoints.get(i)[0],polygonPoints.get(i)[1],polygonPoints.get(i+1)[0],polygonPoints.get(i+1)[1],selectedColor);
-                            System.out.println("connecting "+i+" with "+(i+1));
-                        }else /*if (polygonPoints.size() > 1)*/ {
-                            painter.Draw(polygonPoints.get(i)[0],polygonPoints.get(i)[1],polygonPoints.get(0)[0],polygonPoints.get(0)[1],selectedColor);
-                        }/*else{
-                            painter.Draw(x,y,selectedColor);
-                        }*/
-                    }
-                    shownImg.setData(newImg.getData());
-                }
-
-                repaint();
+            public void mouseDragged(MouseEvent e) {//projection
+                super.mouseDragged(e);
+                Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
             }
         });
 
@@ -151,6 +140,8 @@ public class PaintWindow extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectedShape = Shape.LINE;
+                polygonPoints = new ArrayList<int[]>();
+                img.setData(shownImg.getData());
             }
         });
 
@@ -161,6 +152,7 @@ public class PaintWindow extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 selectedShape = Shape.POLYGON;
                 polygonPoints = new ArrayList<int[]>();
+                img.setData(shownImg.getData());
             }
         });
 
@@ -169,9 +161,9 @@ public class PaintWindow extends JFrame {
         triangleButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                selectedShape = Shape.TRIANGLE;//switch to polygons
-                triangleStage = 0;
+                selectedShape = Shape.TRIANGLE;
                 polygonPoints = new ArrayList<int[]>();
+                img.setData(shownImg.getData());
             }
         });
 
@@ -223,4 +215,45 @@ public class PaintWindow extends JFrame {
         setVisible(true);
 
     }
+    void Rasterize(int x,int y){
+        BufferedImage newImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
+        newImg.setData(img.getData());
+        painter.setImg(newImg);
+
+        switch (selectedShape){
+            case TRIANGLE:
+                break;
+            case POLYGON:
+                        /*if(polygonPoints.size()>0){
+                            if (polygonPoints.size()>1){
+                                for (int i = 0; i < polygonPoints.size(); i++){
+                                    painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],polygonPoints.get(i)[0],polygonPoints.get(i)[1],selectedColor);
+                                }
+                                painter.Draw(polygonPoints.get(polygonPoints.size()-1)[0],polygonPoints.get(polygonPoints.size()-1)[1],x,y,selectedColor);
+                            }
+                            painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],x,y,selectedColor);
+                        }*/
+                for (int i = 0; i < polygonPoints.size(); i++){
+                    if (polygonPoints.size()>1 && i != polygonPoints.size()-1){
+                        painter.Draw(polygonPoints.get(i)[0],polygonPoints.get(i)[1],polygonPoints.get(i+1)[0],polygonPoints.get(i+1)[1],selectedColor);
+                    }
+                    painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],x,y,selectedColor);
+                }
+                if(polygonPoints.size() == 0){
+                    painter.Draw(x,y,selectedColor);
+                }
+                if(polygonPoints.size() >1){
+                    painter.Draw(polygonPoints.get(polygonPoints.size()-1)[0],polygonPoints.get(polygonPoints.size()-1)[1],x,y,selectedColor);
+                }
+                break;
+            case LINE:
+                painter.Draw(x,y,selectedColor);
+                if(polygonPoints.size()==1){
+                    painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],x,y,selectedColor);
+                }
+                break;
+        }
+
+        shownImg.setData(newImg.getData());
+        repaint();}
 }

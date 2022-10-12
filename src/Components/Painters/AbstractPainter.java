@@ -1,4 +1,4 @@
-package Components.Graphics;
+package Components.Painters;
 
 import java.awt.image.BufferedImage;
 
@@ -13,14 +13,12 @@ public abstract class AbstractPainter {
     public void setImg(BufferedImage img){
         this.img = img;
     }
-    public BufferedImage Draw(int x1, int y1, int x2, int y2, int color){
+    public void Draw(int x1, int y1, int x2, int y2, int color){
         DrawPixel(x1,y1,color);
         DrawPixel(x2,y2,color);
-        return img;
     }
-    public BufferedImage Draw(int x1, int y1, int color){
+    public void Draw(int x1, int y1, int color){
         DrawPixel(x1,y1,color);
-        return img;
     }
     protected void DrawPixel(int x,int y,int color){
         for (int i = 0; i < pixelSize; i++){

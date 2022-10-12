@@ -1,4 +1,4 @@
-package Components.Graphics;
+package Components.Painters;
 
 import java.awt.image.BufferedImage;
 
@@ -8,7 +8,7 @@ public class DottedPainter extends AbstractPainter {
     }
 
     @Override
-    public BufferedImage Draw(int x1, int y1, int x2, int y2, int color) {
+    public void Draw(int x1, int y1, int x2, int y2, int color) {
         super.Draw(x1, y1, x2, y2, color);
         boolean skip = false;//because i skip the original, shouldnt skip its neighbor
         if((x2-x1)>(y2-y1)){
@@ -54,7 +54,5 @@ public class DottedPainter extends AbstractPainter {
                 }
             }
         }
-
-        return img;
     }
 }
