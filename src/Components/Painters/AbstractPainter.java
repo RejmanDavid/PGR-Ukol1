@@ -21,6 +21,7 @@ public abstract class AbstractPainter {
         DrawPixel(x1,y1,color);
     }
     protected void DrawPixel(int x,int y,int color){
+        if (x>=img.getWidth()/pixelSize||x<0||y>=img.getHeight()/pixelSize||y<0){System.out.println("Pixel out of bounds"); return;}
         for (int i = 0; i < pixelSize; i++){
             for (int j = 0; j < pixelSize; j++){
                 img.setRGB(x*pixelSize+i,y*pixelSize+j,color);

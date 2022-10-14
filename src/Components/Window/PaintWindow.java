@@ -54,6 +54,10 @@ public class PaintWindow extends JFrame {
         mainPanel.setPreferredSize(new Dimension(width,height));
         add(mainPanel,BorderLayout.CENTER);
 
+        painter.setImg(shownImg);
+        painter.Draw(5,5,18,14,selectedColor);
+        repaint();
+
         mainPanel.requestFocus();
         mainPanel.requestFocusInWindow();
         mainPanel.addMouseListener(new MouseAdapter() {

@@ -11,39 +11,26 @@ public class StraightPainter extends AbstractPainter {
     public void Draw(int x1, int y1, int x2, int y2, int color) {
         super.Draw(x1, y1, x2, y2, color);
 
-        if((x2-x1)>(y2-y1)){
-            if((x1-x2)<(y2-y1)){
-                for (int i = x1; i <= x2; i++){
-                    double dist = ((double)i-x1)/(x2-(double)x1);
-                    int addition = (int)((y2-y1)*dist);
-                    DrawPixel(i,y1+addition,color);
-                    //System.out.println(i+" "+dist);
-                }
-            }else{
-                for (int i = y1; i > y2; i--){
-                    double dist = ((double)i-y1)/(y2-(double)y1);
-                    int addition = (int)((x2-x1)*dist);
-                    DrawPixel(x1+addition,i,color);
-                }
+        float k = ((float)y2-y1)/((float)x2-x1);
+        System.out.println(k);
+        float q = y1-k*x1;
+
+        if(k<1&&k>=-1){
+            if (x1>x2){
+                int tmpX = x2; x2 = x1; x1 = tmpX;
+            }
+            for (int x = x1; x<=x2;x++){
+                int y = Math.round(k*x+q);
+                DrawPixel(x,y,color);
             }
         }else{
-            int tempx = x1; int tempy = y1;
-            x1 = x2; y1 = y2;
-            x2 = tempx; y2 = tempy;
-
-            if((x1-x2)<(y2-y1)){
-                for (int i = x1; i <= x2; i++){
-                    double dist = ((double)i-x1)/(x2-(double)x1);
-                    int addition = (int)((y2-y1)*dist);
-                    DrawPixel(i,y1+addition,color);
-                    //System.out.println(i+" "+dist);
-                }
-            }else{
-                for (int i = y1; i >= y2; i--){
-                    double dist = ((double)i-y1)/(y2-(double)y1);
-                    int addition = (int)((x2-x1)*dist);
-                    DrawPixel(x1+addition,i,color);
-                }
+            if (y1>y2){
+                int tmpY = y2; y2 = y1; y1 = tmpY;
+            }
+            for (int y = y1; y<=y2;y++){
+                int x = Math.round((y-q)/k);
+                if (Float.isInfinite(k)){x = x1;}
+                DrawPixel(x,y,color);
             }
         }
     }
