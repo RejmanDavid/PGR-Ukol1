@@ -6,8 +6,6 @@ import Components.Painters.DottedPainter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -29,7 +27,7 @@ public class PaintWindow extends JFrame {
     int selectedColor = 0xFFFFFF;
     AbstractPainter painter;
     Shape selectedShape = Shape.LINE;
-    List<int[]> polygonPoints = new ArrayList<int[]>();
+    List<int[]> polygonPoints = new ArrayList<>();
 
     public PaintWindow(String title, int width, int height){
         super(title);
@@ -49,7 +47,6 @@ public class PaintWindow extends JFrame {
             }
         };
         painter = new StraightPainter(20);
-
 
         mainPanel.setPreferredSize(new Dimension(width,height));
         add(mainPanel,BorderLayout.CENTER);
@@ -84,9 +81,9 @@ public class PaintWindow extends JFrame {
             }
         });
 
-        mainPanel.addMouseMotionListener(new MouseAdapter() {
+        mainPanel.addMouseMotionListener(new MouseAdapter() {//projection
             @Override
-            public void mouseDragged(MouseEvent e) {//projection
+            public void mouseDragged(MouseEvent e) {
                 super.mouseDragged(e);
                 Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
             }
@@ -102,69 +99,47 @@ public class PaintWindow extends JFrame {
 
         JButton clearButton = new JButton("Clear");
         sidePanel.add(clearButton,constraint);
-        clearButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                img = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-                shownImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-                repaint();
-                polygonPoints = new ArrayList<int[]>();
-            }
+        clearButton.addActionListener(e -> {
+            img = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
+            shownImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
+            repaint();
+            polygonPoints = new ArrayList<>();
         });
 
         sidePanel.add(new JLabel("Line Type",JLabel.CENTER),constraint);
 
         JButton straightLineButton = new JButton("Straight Line");
         sidePanel.add(straightLineButton,constraint);
-        straightLineButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                painter = new StraightPainter(pixelSize);
-            }
-        });
+        straightLineButton.addActionListener(e -> painter = new StraightPainter(pixelSize));
 
         JButton dottedLineButton = new JButton("Dotted Line");
         sidePanel.add(dottedLineButton,constraint);
-        dottedLineButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                painter = new DottedPainter(pixelSize);
-            }
-        });
+        dottedLineButton.addActionListener(e -> painter = new DottedPainter(pixelSize));
 
         sidePanel.add(new JLabel("Shape",JLabel.CENTER),constraint);
 
         JButton lineButton = new JButton("Line");
         sidePanel.add(lineButton,constraint);
-        lineButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedShape = Shape.LINE;
-                polygonPoints = new ArrayList<int[]>();
-                img.setData(shownImg.getData());
-            }
+        lineButton.addActionListener(e -> {
+            selectedShape = Shape.LINE;
+            polygonPoints = new ArrayList<>();
+            img.setData(shownImg.getData());
         });
 
         JButton polygonButton = new JButton("Polygon");
         sidePanel.add(polygonButton,constraint);
-        polygonButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedShape = Shape.POLYGON;
-                polygonPoints = new ArrayList<int[]>();
-                img.setData(shownImg.getData());
-            }
+        polygonButton.addActionListener(e -> {
+            selectedShape = Shape.POLYGON;
+            polygonPoints = new ArrayList<>();
+            img.setData(shownImg.getData());
         });
 
         JButton triangleButton = new JButton("Triangle");
         sidePanel.add(triangleButton,constraint);
-        triangleButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedShape = Shape.TRIANGLE;
-                polygonPoints = new ArrayList<int[]>();
-                img.setData(shownImg.getData());
-            }
+        triangleButton.addActionListener(e -> {
+            selectedShape = Shape.TRIANGLE;
+            polygonPoints = new ArrayList<>();
+            img.setData(shownImg.getData());
         });
 
         sidePanel.add(new JLabel("Color",JLabel.CENTER),constraint);
@@ -172,42 +147,22 @@ public class PaintWindow extends JFrame {
         JButton whiteButton = new JButton("White");
         whiteButton.setBackground(Color.white);
         sidePanel.add(whiteButton,constraint);
-        whiteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedColor = 0xFFFFFF;
-            }
-        });
+        whiteButton.addActionListener(e -> selectedColor = 0xFFFFFF);
 
         JButton redButton = new JButton("Red");
         redButton.setBackground(new Color(0xFF4444));
         sidePanel.add(redButton,constraint);
-        redButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedColor = 0xFF0000;
-            }
-        });
+        redButton.addActionListener(e -> selectedColor = 0xFF0000);
 
         JButton greenButton = new JButton("Green");
         greenButton.setBackground(new Color(0x33FF33));
         sidePanel.add(greenButton,constraint);
-        greenButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedColor = 0x00FF00;
-            }
-        });
+        greenButton.addActionListener(e -> selectedColor = 0x00FF00);
 
         JButton blueButton = new JButton("Blue");
         blueButton.setBackground(new Color(0x4444FF));
         sidePanel.add(blueButton,constraint);
-        blueButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedColor = 0x0000FF;
-            }
-        });
+        blueButton.addActionListener(e -> selectedColor = 0x0000FF);
 
         add(sidePanel,BorderLayout.EAST);
 
@@ -235,9 +190,8 @@ public class PaintWindow extends JFrame {
                     int a2 = polygonPoints.get(1)[0], b2 = polygonPoints.get(1)[1];
                     int[] midPoint = new int[]{(a1 + a2) / 2, (b1 + b2) / 2};
                     float k1 = (((float) b2 - b1) / ((float) a2 - a1));
-                    float q1 = b1 - k1 * a1;
+                    //float q1 = b1 - k1 * a1;
                     float k2 = -1 / k1;
-                    float qAlt = (b1 - k1 * a1) / k1;
                     float q2 = midPoint[1] - k2 * midPoint[0];
                     float q3 = y - k1 * x;
 
@@ -258,14 +212,11 @@ public class PaintWindow extends JFrame {
                         float c2 = m2 * x + n2 * y;
 
                         float det = m1 * n2 - m2 * n1;
-                        System.out.println(det);
                         interX = Math.round((n2 * c1 - n1 * c2) / det);
                         interY = Math.round((m1 * c2 - m2 * c1) / det);
                     }
 
-                    System.out.println(interX + " " + interY);
                     painter.Draw(Math.round(interX), Math.round(interY), 0x00FF00);
-
                     painter.Draw(a1, b1, interX, interY, selectedColor);
                     painter.Draw(a2, b2, interX, interY, selectedColor);
                 }

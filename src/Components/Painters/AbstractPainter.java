@@ -3,7 +3,6 @@ package Components.Painters;
 import java.awt.image.BufferedImage;
 
 public abstract class AbstractPainter {
-    //int x1,x2,y1,y2;
     int pixelSize;
     BufferedImage img;
 
