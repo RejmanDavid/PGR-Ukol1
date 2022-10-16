@@ -168,7 +168,6 @@ public class PaintWindow extends JFrame {
 
         pack();
         setVisible(true);
-
     }
     void Rasterize(int x,int y){
         BufferedImage newImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
