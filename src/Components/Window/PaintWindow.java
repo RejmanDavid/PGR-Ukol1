@@ -54,10 +54,6 @@ public class PaintWindow extends JFrame {
         mainPanel.setPreferredSize(new Dimension(width,height));
         add(mainPanel,BorderLayout.CENTER);
 
-        painter.setImg(shownImg);
-        painter.Draw(5,5,18,14,selectedColor);
-        repaint();
-
         mainPanel.requestFocus();
         mainPanel.requestFocusInWindow();
         mainPanel.addMouseListener(new MouseAdapter() {
@@ -224,38 +220,76 @@ public class PaintWindow extends JFrame {
         newImg.setData(img.getData());
         painter.setImg(newImg);
 
-        switch (selectedShape){
-            case TRIANGLE:
-                break;
-            case POLYGON:
-                        /*if(polygonPoints.size()>0){
-                            if (polygonPoints.size()>1){
-                                for (int i = 0; i < polygonPoints.size(); i++){
-                                    painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],polygonPoints.get(i)[0],polygonPoints.get(i)[1],selectedColor);
-                                }
-                                painter.Draw(polygonPoints.get(polygonPoints.size()-1)[0],polygonPoints.get(polygonPoints.size()-1)[1],x,y,selectedColor);
-                            }
-                            painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],x,y,selectedColor);
-                        }*/
-                for (int i = 0; i < polygonPoints.size(); i++){
-                    if (polygonPoints.size()>1 && i != polygonPoints.size()-1){
-                        painter.Draw(polygonPoints.get(i)[0],polygonPoints.get(i)[1],polygonPoints.get(i+1)[0],polygonPoints.get(i+1)[1],selectedColor);
+        switch (selectedShape) {
+            case TRIANGLE -> {
+                if (polygonPoints.size() == 0) {
+                    painter.Draw(x, y, selectedColor);
+                }
+                if (polygonPoints.size() == 1) {
+                    painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], x, y, selectedColor);
+                }
+                if (polygonPoints.size() > 1) {
+                    painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], polygonPoints.get(1)[0], polygonPoints.get(1)[1], selectedColor);
+
+                    int a1 = polygonPoints.get(0)[0], b1 = polygonPoints.get(0)[1];
+                    int a2 = polygonPoints.get(1)[0], b2 = polygonPoints.get(1)[1];
+                    int[] midPoint = new int[]{(a1 + a2) / 2, (b1 + b2) / 2};
+                    float k1 = (((float) b2 - b1) / ((float) a2 - a1));
+                    float q1 = b1 - k1 * a1;
+                    float k2 = -1 / k1;
+                    float qAlt = (b1 - k1 * a1) / k1;
+                    float q2 = midPoint[1] - k2 * midPoint[0];
+                    float q3 = y - k1 * x;
+
+                    int interX, interY;
+                    if (polygonPoints.get(0)[0] == polygonPoints.get(1)[0]) {
+                        interX = x;
+                        interY = midPoint[1];
+                    } else if (polygonPoints.get(0)[1] == polygonPoints.get(1)[1]) {
+                        interX = midPoint[0];
+                        interY = y;
+                    } else {
+                        float m1 = (midPoint[0] + 1) * k2 + q2 - midPoint[1];
+                        float n1 = -1;
+                        float c1 = m1 * midPoint[0] + n1 * midPoint[1];
+
+                        float m2 = (x + 1) * k1 + q3 - y;
+                        float n2 = -1;
+                        float c2 = m2 * x + n2 * y;
+
+                        float det = m1 * n2 - m2 * n1;
+                        System.out.println(det);
+                        interX = Math.round((n2 * c1 - n1 * c2) / det);
+                        interY = Math.round((m1 * c2 - m2 * c1) / det);
                     }
-                    painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],x,y,selectedColor);
+
+                    System.out.println(interX + " " + interY);
+                    painter.Draw(Math.round(interX), Math.round(interY), 0x00FF00);
+
+                    painter.Draw(a1, b1, interX, interY, selectedColor);
+                    painter.Draw(a2, b2, interX, interY, selectedColor);
                 }
-                if(polygonPoints.size() == 0){
-                    painter.Draw(x,y,selectedColor);
+            }
+            case POLYGON -> {
+                for (int i = 0; i < polygonPoints.size(); i++) {
+                    if (polygonPoints.size() > 1 && i != polygonPoints.size() - 1) {
+                        painter.Draw(polygonPoints.get(i)[0], polygonPoints.get(i)[1], polygonPoints.get(i + 1)[0], polygonPoints.get(i + 1)[1], selectedColor);
+                    }
+                    painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], x, y, selectedColor);
                 }
-                if(polygonPoints.size() >1){
-                    painter.Draw(polygonPoints.get(polygonPoints.size()-1)[0],polygonPoints.get(polygonPoints.size()-1)[1],x,y,selectedColor);
+                if (polygonPoints.size() == 0) {
+                    painter.Draw(x, y, selectedColor);
                 }
-                break;
-            case LINE:
-                painter.Draw(x,y,selectedColor);
-                if(polygonPoints.size()==1){
-                    painter.Draw(polygonPoints.get(0)[0],polygonPoints.get(0)[1],x,y,selectedColor);
+                if (polygonPoints.size() > 1) {
+                    painter.Draw(polygonPoints.get(polygonPoints.size() - 1)[0], polygonPoints.get(polygonPoints.size() - 1)[1], x, y, selectedColor);
                 }
-                break;
+            }
+            case LINE -> {
+                painter.Draw(x, y, selectedColor);
+                if (polygonPoints.size() == 1) {
+                    painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], x, y, selectedColor);
+                }
+            }
         }
 
         shownImg.setData(newImg.getData());

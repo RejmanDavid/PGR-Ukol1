@@ -1,7 +1,5 @@
 package Components.Painters;
 
-import java.awt.image.BufferedImage;
-
 public class DottedPainter extends AbstractPainter {
     public DottedPainter(int pixelSize) {
         super(pixelSize);
@@ -10,10 +8,10 @@ public class DottedPainter extends AbstractPainter {
     @Override
     public void Draw(int x1, int y1, int x2, int y2, int color) {
         super.Draw(x1, y1, x2, y2, color);
-        boolean skip = false;//because i skip the original, shouldnt skip its neighbor
+        if(x1==x2&&y1==y2){return;}
+        boolean skip = false;
 
         float k = ((float)y2-y1)/((float)x2-x1);
-        System.out.println(k);
         float q = y1-k*x1;
 
         if(k<1&&k>=-1){

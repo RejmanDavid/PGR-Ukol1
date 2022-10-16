@@ -11,10 +11,10 @@ public class StraightPainter extends AbstractPainter {
     public void Draw(int x1, int y1, int x2, int y2, int color) {
         super.Draw(x1, y1, x2, y2, color);
 
-        float k = ((float)y2-y1)/((float)x2-x1);
-        System.out.println(k);
-        float q = y1-k*x1;
+        if(x1==x2&&y1==y2){return;}
 
+        float k = ((float)y2-y1)/((float)x2-x1);
+        float q = y1-k*x1;
         if(k<1&&k>=-1){
             if (x1>x2){
                 int tmpX = x2; x2 = x1; x1 = tmpX;
