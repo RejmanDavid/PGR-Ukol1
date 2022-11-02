@@ -15,7 +15,12 @@ import java.util.List;
 enum Shape {
     LINE,
     TRIANGLE,
-    POLYGON
+    POLYGON,
+    FILL
+}
+enum ActionType{
+    CREATE,
+    CUT
 }
 
 public class PaintWindow extends JFrame {
@@ -27,6 +32,7 @@ public class PaintWindow extends JFrame {
     int selectedColor = 0xFFFFFF;
     AbstractPainter painter;
     Shape selectedShape = Shape.LINE;
+    ActionType selectedAction = ActionType.CREATE;
     List<int[]> polygonPoints = new ArrayList<>();
 
     public PaintWindow(String title, int width, int height){
@@ -53,6 +59,7 @@ public class PaintWindow extends JFrame {
 
         mainPanel.requestFocus();
         mainPanel.requestFocusInWindow();
+
         mainPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {//confirmation
@@ -70,6 +77,9 @@ public class PaintWindow extends JFrame {
                             polygonPoints.clear();
                             img.setData(shownImg.getData());
                         }
+                        break;
+                    case FILL:
+                        Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
                         break;
                 }
             }
@@ -138,6 +148,14 @@ public class PaintWindow extends JFrame {
         sidePanel.add(triangleButton,constraint);
         triangleButton.addActionListener(e -> {
             selectedShape = Shape.TRIANGLE;
+            polygonPoints = new ArrayList<>();
+            img.setData(shownImg.getData());
+        });
+
+        JButton fillButton = new JButton("Fill");
+        sidePanel.add(fillButton,constraint);
+        fillButton.addActionListener(e -> {
+            selectedShape = Shape.FILL;
             polygonPoints = new ArrayList<>();
             img.setData(shownImg.getData());
         });
@@ -211,6 +229,7 @@ public class PaintWindow extends JFrame {
                         float c2 = m2 * x + n2 * y;
 
                         float det = m1 * n2 - m2 * n1;
+                        System.out.println(det);
                         interX = Math.round((n2 * c1 - n1 * c2) / det);
                         interY = Math.round((m1 * c2 - m2 * c1) / det);
                     }
@@ -239,6 +258,27 @@ public class PaintWindow extends JFrame {
                 if (polygonPoints.size() == 1) {
                     painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], x, y, selectedColor);
                 }
+                //TODO fix non-horizontal cutter cut, skalarni soucit na zjisteni uhlu, polygon musi byt counter clockwise
+                int ecX1 = 10, ecY1 = 17, ecX2 =30, ecY2 = 12;
+                int eX1 = 15, eY1 = 27, eX2 = 30, eY2 = 2;
+                painter.Draw(ecX1,ecY1,ecX2,ecY2,0xFF0000);
+                //turn e2 into E
+                float k1 = (((float) ecY2 - ecY1) / ((float) ecX2 - ecX1));
+                float q1 = ecY1 - k1 * ecX1;
+                float k2 = (((float) eY2 - eY1) / ((float) eX2 - eX1));
+                float q2 = eY1 - k2 * eX1;
+                float clipper = k1*ecX1 +q1;
+                float edge = k2*eX1 +q2;
+                int cutY = Math.round(edge-clipper);
+                float distance = (float)(eY1-cutY-eY1)/(eY2-eY1);
+                //System.out.println(distance);
+                int cutX = Math.round((eX2-eX1)*distance);
+                painter.Draw(eX1,eY1,eX2,eY2,0x444444);
+                painter.Draw(eX1,eY1,eX1+cutX,eY1-cutY,0x00FF00);
+            }
+            case FILL -> {
+                painter.Draw(x, y, selectedColor);
+                System.out.println(img.getRGB(x*pixelSize,y*pixelSize)); //TODO FILL
             }
         }
 
