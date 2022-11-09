@@ -257,7 +257,7 @@ public class PaintWindow extends JFrame {
                 painter.Draw(x, y, selectedColor);
                 if (polygonPoints.size() == 1) {
                     painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], x, y, selectedColor);
-                }
+                }/*
                 //TODO fix non-horizontal cutter cut, skalarni soucit na zjisteni uhlu, polygon musi byt counter clockwise
                 //TODO make a new painter for this or teach current ones new tricks
                 int ecX1 = 10, ecY1 = 17, ecX2 =25, ecY2 = 12;
@@ -284,7 +284,7 @@ public class PaintWindow extends JFrame {
                 //System.out.println(distance);
                 int cutX = Math.round((eX2-eX1)*distance);
                 painter.Draw(eX1,eY1,eX2,eY2,0x444444);
-                painter.Draw(eX1,eY1,collisionX,collisionY,0x00FF00);
+                painter.Draw(eX1,eY1,collisionX,collisionY,0x00FF00);*/
             }
             case FILL -> {
                 painter.Draw(x, y, selectedColor);
