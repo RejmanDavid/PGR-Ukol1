@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 
 enum Shape {
@@ -87,7 +88,13 @@ public class PaintWindow extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
+                switch (selectedShape){
+                    case FILL:
+                        break;
+                    default:
+                        Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
+                        break;
+                }
             }
         });
 
@@ -229,7 +236,6 @@ public class PaintWindow extends JFrame {
                         float c2 = m2 * x + n2 * y;
 
                         float det = m1 * n2 - m2 * n1;
-                        System.out.println(det);
                         interX = Math.round((n2 * c1 - n1 * c2) / det);
                         interY = Math.round((m1 * c2 - m2 * c1) / det);
                     }
@@ -287,11 +293,38 @@ public class PaintWindow extends JFrame {
                 painter.Draw(eX1,eY1,collisionX,collisionY,0x00FF00);*/
             }
             case FILL -> {
-                painter.Draw(x, y, selectedColor);
-                System.out.println(img.getRGB(x*pixelSize,y*pixelSize)); //TODO FILL
+                Color bgColor = new Color(newImg.getRGB(x*pixelSize, y*pixelSize));
+                if(bgColor.equals(new Color(selectedColor))){break;}
+                seedFill(x,y,newImg,bgColor);
             }
         }
-
         shownImg.setData(newImg.getData());
-        repaint();}
+        repaint();
+    }
+    private boolean seedCheck(int x, int y,Color bgColor,BufferedImage newImg,List<int[]>newPoints){
+        if (new Color(newImg.getRGB(x * pixelSize, y * pixelSize)).equals(bgColor) ){
+            System.out.println(new Color(newImg.getRGB(x * pixelSize, y * pixelSize))+" "+bgColor);
+        }
+        Color pixelColor = new Color(newImg.getRGB(x * pixelSize, y * pixelSize));
+        return !new Color(selectedColor).equals(pixelColor) && pixelColor.equals(bgColor) /*&&
+                !polygonPoints.contains(new int[]{x, y})&&
+                !newPoints.contains(new int[]{x,y})*/;
+    }
+    private void seedFill(int x,int y,BufferedImage newImg,Color bgColor){
+        if (x<0||y<0||(x+1)*pixelSize>img.getWidth()||(y+1)*pixelSize>img.getHeight()||!new Color(newImg.getRGB(x * pixelSize, y * pixelSize)).equals(bgColor)){
+            polygonPoints.remove(0);
+            return;
+        }
+        painter.Draw(x,y,selectedColor);
+        polygonPoints.add(new int[]{0});
+        polygonPoints.add(new int[]{0});
+        polygonPoints.add(new int[]{0});
+        polygonPoints.add(new int[]{0});
+        seedFill(x+1,y,newImg,bgColor);
+        seedFill(x-1,y,newImg,bgColor);
+        seedFill(x,y+1,newImg,bgColor);
+        seedFill(x,y-1,newImg,bgColor);
+        polygonPoints.remove(0);
+        if (polygonPoints.size()==0){img.setData(newImg.getData());}
+    }
 }
