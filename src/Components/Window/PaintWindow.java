@@ -10,17 +10,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HexFormat;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 enum Shape {
     LINE,
     TRIANGLE,
     POLYGON,
-    FILL
-}
-enum ActionType{
-    CREATE,
+    SEEDFILL,
+    SCANLINE,
     CUT
 }
 
@@ -33,8 +32,8 @@ public class PaintWindow extends JFrame {
     int selectedColor = 0xFFFFFF;
     AbstractPainter painter;
     Shape selectedShape = Shape.LINE;
-    ActionType selectedAction = ActionType.CREATE;
     List<int[]> polygonPoints = new ArrayList<>();
+    List<float[]> permanentPoints = new ArrayList<>();
 
     public PaintWindow(String title, int width, int height){
         super(title);
@@ -79,7 +78,7 @@ public class PaintWindow extends JFrame {
                             img.setData(shownImg.getData());
                         }
                         break;
-                    case FILL:
+                    case SEEDFILL:
                         Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
                         break;
                 }
@@ -89,7 +88,7 @@ public class PaintWindow extends JFrame {
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
                 switch (selectedShape){
-                    case FILL:
+                    case SEEDFILL:
                         break;
                     default:
                         Rasterize(e.getX()/pixelSize,e.getY()/pixelSize);
@@ -133,7 +132,7 @@ public class PaintWindow extends JFrame {
         sidePanel.add(dottedLineButton,constraint);
         dottedLineButton.addActionListener(e -> painter = new DottedPainter(pixelSize));
 
-        sidePanel.add(new JLabel("Shape",JLabel.CENTER),constraint);
+        sidePanel.add(new JLabel("Shape / Action",JLabel.CENTER),constraint);
 
         JButton lineButton = new JButton("Line");
         sidePanel.add(lineButton,constraint);
@@ -162,7 +161,24 @@ public class PaintWindow extends JFrame {
         JButton fillButton = new JButton("Fill");
         sidePanel.add(fillButton,constraint);
         fillButton.addActionListener(e -> {
-            selectedShape = Shape.FILL;
+            selectedShape = Shape.SEEDFILL;
+            polygonPoints = new ArrayList<>();
+            img.setData(shownImg.getData());
+        });
+
+        JButton scanButton = new JButton("ScanLine Filled");
+        sidePanel.add(scanButton,constraint);
+        scanButton.addActionListener(e -> {
+            selectedShape = Shape.SCANLINE;
+            polygonPoints = new ArrayList<>();
+            permanentPoints = new ArrayList<>();
+            img.setData(shownImg.getData());
+        });
+
+        JButton cutButton = new JButton("Cut (ScanLine)");
+        sidePanel.add(cutButton,constraint);
+        cutButton.addActionListener(e -> {
+            selectedShape = Shape.CUT;
             polygonPoints = new ArrayList<>();
             img.setData(shownImg.getData());
         });
@@ -259,6 +275,64 @@ public class PaintWindow extends JFrame {
                     painter.Draw(polygonPoints.get(polygonPoints.size() - 1)[0], polygonPoints.get(polygonPoints.size() - 1)[1], x, y, selectedColor);
                 }
             }
+            case SCANLINE -> {
+                //x=0;y=0;
+                //polygonPoints = new ArrayList<>();
+                //polygonPoints.add(new int[]{0,5});
+                //polygonPoints.add(new int[]{3,3});
+                permanentPoints = new ArrayList<>();
+                permanentPoints.add(new float[]{x,y});
+                for (int[] cord :
+                        polygonPoints) {
+                    permanentPoints.add(new float[]{cord[0], cord[1]});
+                }
+                //System.out.println(permanentPoints.size());
+
+                if(permanentPoints.size()>2){
+                    for (int i = 0; i < img.getHeight()/pixelSize;i++){
+                        List<Integer>collisions = new ArrayList<>();
+                        for (int j = 0; j < permanentPoints.size();j++){
+                            float[] p1 = permanentPoints.get(j);
+                            float[] p2;
+                            if(j+1==permanentPoints.size()){p2 = permanentPoints.get(0);}else{p2 = permanentPoints.get(j+1);}
+                            if(p1[1]>p2[1]){float[]p3 = p1; p1 = p2; p2 = p3;}
+
+                            if(p2[1]<p1[1]+1||p1[1]>i||p2[1]<=i){continue;}
+                            float k = (p2[1]-p1[1])/(p2[0]-p1[0]);
+
+                            float xcol;
+                            if(p1[0]==p2[0]){xcol = p1[0];}else{
+                                float q = p1[1]-k*p1[0];
+                                xcol = (i-q)/k;
+                            }
+
+                            collisions.add(Math.round(xcol));
+                            //System.out.println(j+": "+Math.round(xcol)+","+i);
+                        }
+                        int xstart;int xend;
+                        collisions = collisions.stream().sorted().collect(Collectors.toList());
+                        while(collisions.size()>0){
+                            xstart = Math.round(collisions.get(0));
+                            collisions.remove(0);
+                            xend = Math.round(collisions.get(0));
+                            collisions.remove(0);
+                            painter.Draw(xstart,i,xend,i,selectedColor);
+                        }
+                    }
+                }
+                for (int i = 0; i < polygonPoints.size(); i++) {
+                    if (polygonPoints.size() > 1 && i != polygonPoints.size() - 1) {
+                        painter.Draw(polygonPoints.get(i)[0], polygonPoints.get(i)[1], polygonPoints.get(i + 1)[0], polygonPoints.get(i + 1)[1], selectedColor);
+                    }
+                    painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], x, y, selectedColor);
+                }
+                if (polygonPoints.size() == 0) {
+                    painter.Draw(x, y, selectedColor);
+                }
+                if (polygonPoints.size() > 1) {
+                    painter.Draw(polygonPoints.get(polygonPoints.size() - 1)[0], polygonPoints.get(polygonPoints.size() - 1)[1], x, y, selectedColor);
+                }
+            }
             case LINE -> {
                 painter.Draw(x, y, selectedColor);
                 if (polygonPoints.size() == 1) {
@@ -292,23 +366,14 @@ public class PaintWindow extends JFrame {
                 painter.Draw(eX1,eY1,eX2,eY2,0x444444);
                 painter.Draw(eX1,eY1,collisionX,collisionY,0x00FF00);*/
             }
-            case FILL -> {
+            case SEEDFILL -> {
                 Color bgColor = new Color(newImg.getRGB(x*pixelSize, y*pixelSize));
-                if(bgColor.equals(new Color(selectedColor))){break;}
+                if(bgColor.equals(new Color(selectedColor))){polygonPoints = new ArrayList<>(); break;}
                 seedFill(x,y,newImg,bgColor);
             }
         }
         shownImg.setData(newImg.getData());
         repaint();
-    }
-    private boolean seedCheck(int x, int y,Color bgColor,BufferedImage newImg,List<int[]>newPoints){
-        if (new Color(newImg.getRGB(x * pixelSize, y * pixelSize)).equals(bgColor) ){
-            System.out.println(new Color(newImg.getRGB(x * pixelSize, y * pixelSize))+" "+bgColor);
-        }
-        Color pixelColor = new Color(newImg.getRGB(x * pixelSize, y * pixelSize));
-        return !new Color(selectedColor).equals(pixelColor) && pixelColor.equals(bgColor) /*&&
-                !polygonPoints.contains(new int[]{x, y})&&
-                !newPoints.contains(new int[]{x,y})*/;
     }
     private void seedFill(int x,int y,BufferedImage newImg,Color bgColor){
         if (x<0||y<0||(x+1)*pixelSize>img.getWidth()||(y+1)*pixelSize>img.getHeight()||!new Color(newImg.getRGB(x * pixelSize, y * pixelSize)).equals(bgColor)){
@@ -325,6 +390,7 @@ public class PaintWindow extends JFrame {
         seedFill(x,y+1,newImg,bgColor);
         seedFill(x,y-1,newImg,bgColor);
         polygonPoints.remove(0);
+        //System.out.println(polygonPoints.size());
         if (polygonPoints.size()==0){img.setData(newImg.getData());}
     }
 }
