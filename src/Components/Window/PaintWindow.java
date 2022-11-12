@@ -336,7 +336,6 @@ public class PaintWindow extends JFrame {
                         polygonPoints) {
                     permanentPoints.add(new float[]{cord[0], cord[1]});
                 }
-                //System.out.println(permanentPoints.size());
 
                 if(permanentPoints.size()>2){
                     for (int i = 0; i < img.getHeight()/pixelSize;i++){
@@ -358,7 +357,6 @@ public class PaintWindow extends JFrame {
                             }
 
                             collisions.add(Math.round(xcol));
-                            //System.out.println(j+": "+Math.round(xcol)+","+i);
                         }
                         int xstart;int xend;
                         collisions.add(0);collisions.add(img.getWidth()/pixelSize);
@@ -389,34 +387,7 @@ public class PaintWindow extends JFrame {
                 painter.Draw(x, y, selectedColor);
                 if (polygonPoints.size() == 1) {
                     painter.Draw(polygonPoints.get(0)[0], polygonPoints.get(0)[1], x, y, selectedColor);
-                }/*
-                //TODO fix non-horizontal cutter cut, skalarni soucit na zjisteni uhlu, polygon musi byt counter clockwise
-                //TODO make a new painter for this or teach current ones new tricks
-                int ecX1 = 10, ecY1 = 17, ecX2 =25, ecY2 = 12;
-                int eX1 = 15, eY1 = 27, eX2 = x, eY2 = y;
-                painter.Draw(ecX1,ecY1,ecX2,ecY2,0xFF0000);
-                //turn e2 into E
-                float k1 = (((float) ecY2 - ecY1) / ((float) ecX2 - ecX1));
-                float q1 = ecY1 - k1 * ecX1;
-                float k2 = (((float) eY2 - eY1) / ((float) eX2 - eX1));
-                float q2 = eY1 - k2 * eX1;
-                float clipper = k1*ecX1 +q1;
-                float edge = k2*eX1 +q2;
-                int cutY = Math.round(edge-clipper);
-                float distance = (float)(eY1-cutY-eY1)/(eY2-eY1);
-
-                int collisionX = Math.round(((ecX1*ecY2-ecX2*ecY1)*(eX1-eX2)-(eX1*eY2-eX2*eY1)*(ecX1-ecX2))/
-                        (float)((ecX1-ecX2)*(eY1-eY2)-(ecY1-ecY2)*(eX1-eX2)));
-                int collisionY = Math.round(((ecX1*ecY2-ecX2*ecY1)*(eY1-eY2)-(eX1*eY2-eX2*eY1)*(ecY1-ecY2))/
-                        (float)((ecX1-ecX2)*(eY1-eY2)-(ecY1-ecY2)*(eX1-eX2)));
-
-                painter.Draw(collisionX,collisionY,0xAAAAFF);
-                if (collisionY<y){collisionY=y; collisionX = x;}
-                else if (collisionX<ecX1||collisionX>ecX2){collisionX = x; collisionY = y;}
-                //System.out.println(distance);
-                int cutX = Math.round((eX2-eX1)*distance);
-                painter.Draw(eX1,eY1,eX2,eY2,0x444444);
-                painter.Draw(eX1,eY1,collisionX,collisionY,0x00FF00);*/
+                }
             }
             case SEEDFILL -> {
                 Color bgColor = new Color(newImg.getRGB(x*pixelSize, y*pixelSize));
