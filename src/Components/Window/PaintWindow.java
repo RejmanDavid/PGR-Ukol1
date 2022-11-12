@@ -10,7 +10,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -176,13 +175,13 @@ public class PaintWindow extends JFrame {
             img.setData(shownImg.getData());
         });
 
-        JButton cutButton = new JButton("Cut (ScanLine)");
-        sidePanel.add(cutButton,constraint);
-        cutButton.addActionListener(e -> {
-            selectedShape = Shape.CUT;
-            polygonPoints = new ArrayList<>();
-            permanentPoints = new ArrayList<>();
-            img.setData(shownImg.getData());
+        JButton cutButton = new JButton("Cut (reverse fill)");
+        sidePanel.add(cutButton,constraint);    //the outcome is the same because i already pre-filled the polygon,
+        cutButton.addActionListener(e -> {      //if i did fill as its cut i would either:
+            selectedShape = Shape.CUT;          //-make a list of collisions for both cutted and cutting polygon
+            polygonPoints = new ArrayList<>();  //and use the AND logical function to fill the new polygon.
+            permanentPoints = new ArrayList<>();//-use Sutherland-Hodgman's algorithm to create a new polygon from
+            img.setData(shownImg.getData());    //points inside the cutting polygon or new ones on its edges.
         });
 
         sidePanel.add(new JLabel("Color",JLabel.CENTER),constraint);
