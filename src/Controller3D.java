@@ -1,12 +1,14 @@
 import Components.Painters.AbstractPainter;
-import Components.Painters.SolidPainter;
+import Components.Painters.DottedPainter;
+import Components.Painters.WireRenderer;
 import Components.Painters.StraightPainter;
+import Components.ThreeD.Scene;
 import Components.ThreeD.Solid;
-import transforms.Point3D;
-
+import transforms.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class Controller3D extends JFrame {
     BufferedImage img;
@@ -32,39 +34,57 @@ public class Controller3D extends JFrame {
             }
         };
         painter = new StraightPainter(pixelSize);
-
         mainPanel.setPreferredSize(new Dimension(width,height));
         add(mainPanel,BorderLayout.CENTER);
-
         mainPanel.requestFocus();
         mainPanel.requestFocusInWindow();
+        Scene scene = new Scene(new ArrayList<>());
 
-        Point3D[] vb = {
-                new Point3D(2,8,1),
-                new Point3D(8,8,1),
-                new Point3D(8,2,1),
-                new Point3D(2,2,1)
-        };
-        int[][] ib = {
-                {0,1},
-                {1,2},
-                {2,3},
-                {3,0}
-        };
-        Solid cube = new Solid(vb,ib);
-        StraightPainter sp = new StraightPainter(pixelSize);
-        sp.setImg(img);
-        SolidPainter snake = new SolidPainter(sp);
-        snake.Draw(cube,0x00CCCC);
+        scene.addObject(
+                new Solid(
+                        new Point3D[]{
+                                new Point3D(-0.9,-0.6,1),
+                                new Point3D(-0.6,-0.6,1),
+                                new Point3D(-0.6,-0.9,1),
+                                new Point3D(-0.9,-0.9,1)
+                        },
+                        new int[][]{
+                            {0,1},
+                            {1,2},
+                            {2,3},
+                            {3,0}
+                        },0x00FFFF
+                )
+        );
+        scene.addObject(
+                new Solid(
+                        new Point3D[]{
+                                new Point3D(0,-0.8,1),
+                                new Point3D(0.2,-0.6,1),
+                                new Point3D(0.3,0,1),
+                                new Point3D(0.5,0.2,1),
+                                new Point3D(0.3,0,1)
+                        },
+                        new int[][]{
+                                {0,1},
+                                {1,2},
+                                {2,3},
+                                {3,4},
+                                {4,0}
+                        },0xFFFF00
+                )
+        );
+        Mat4 mat = new Mat4Transl(new Vec3D(0.1,0.1,0));//move by screen halves
+        Mat4Scale scale = new Mat4Scale(0.6);//scale from centre of screen
+        //todo combine
+        scene.changeModel(0,scale);
+        AbstractPainter painter = new StraightPainter(pixelSize);
+        painter.setImg(img);
+
+        WireRenderer wireRenderer = new WireRenderer(painter);
+        wireRenderer.Draw(scene.getSolids());
+
         pack();
         setVisible(true);
-    }
-    void Rasterize(int x,int y){
-        BufferedImage newImg = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-        newImg.setData(img.getData());
-        painter.setImg(newImg);
-
-        img.setData(newImg.getData());
-        repaint();
     }
 }
