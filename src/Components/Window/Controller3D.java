@@ -1,7 +1,6 @@
 package Components.Window;
 
 import Components.Painters.AbstractPainter;
-import Components.Painters.DottedPainter;
 import Components.Painters.WireRenderer;
 import Components.Painters.StraightPainter;
 import Components.ThreeD.Scene;
@@ -9,8 +8,7 @@ import Components.ThreeD.Solid;
 import transforms.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -18,10 +16,12 @@ public class Controller3D extends JFrame {
     BufferedImage img;
     JPanel mainPanel;
     int pixelSize = 5;
+    Point mouse;
+    boolean isFocused = true;
     AbstractPainter painter;
     Scene scene = new Scene(new ArrayList<>());
     Camera camera = new Camera(
-            new Vec3D(-0.38,-0.5,0),//Xforward,Yleft,Zup
+            new Vec3D(-0.5,-0.5,0),//Xforward,Yleft,Zup
             Math.toRadians(45),//azimuth//left
             Math.toRadians(0),//zenith//updown
             1,true
@@ -36,7 +36,6 @@ public class Controller3D extends JFrame {
         setLocation((dim.width-width)/2, (dim.height-height)/2);
 
         img = new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
-        img = new BufferedImage(width,height,BufferedImage.TYPE_INT_RGB);
         mainPanel = new JPanel(){
             @Override
             protected void paintComponent(Graphics g) {
@@ -50,26 +49,74 @@ public class Controller3D extends JFrame {
         mainPanel.requestFocus();
         mainPanel.requestFocusInWindow();
 
-        mainPanel.addKeyListener(new KeyAdapter() {
+        addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
-                System.out.println("b");//todo DOESNT REACT
                 switch (e.getKeyChar()){
                     case'a':
-                        Move( new int[]{-1/img.getWidth(),1});
+                        camera = camera.left(0.1);
                         break;
                     case's':
-                        Move( new int[]{1,1/img.getWidth()});
-                        System.out.println("s");
+                        camera = camera.forward(-0.1);
                         break;
                     case'd':
-                        Move( new int[]{1/img.getWidth(),1});
+                        camera = camera.left(-0.1);
                         break;
                     case'w':
-                        Move( new int[]{1,-1/img.getWidth()});
+                        camera = camera.forward(0.1);
                         break;
                 }
+                Render();
+                //System.out.println(camera.getPosition());
+            }
+        });
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                isFocused = !isFocused;
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                if (!isFocused){return;}
+                try {
+                    Robot robot = new Robot();
+                    Point mousePosition = MouseInfo.getPointerInfo().getLocation();
+                    if (mousePosition.x-10<getX()){
+                        robot.mouseMove(getX()+width-1,mousePosition.y);
+                    }
+                    else if (mousePosition.x+10>getX()+width){
+                        robot.mouseMove(getX()+1,mousePosition.y);
+                    }//X
+                    if (mousePosition.y-50<getY()){
+                        robot.mouseMove(mousePosition.x,getY()+height+25);
+                    }
+                    else if (mousePosition.y+10>getY()+height){
+                        robot.mouseMove(mousePosition.x,getY()+35);
+                    }//Y
+                    mouse = null;
+                } catch (AWTException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                if (!isFocused){return;}
+                if (mouse == null) {mouse = new Point(getMousePosition().x,getMousePosition().y);}
+                int deX = e.getX() - mouse.x;
+                int deY = e.getY() - mouse.y;
+                //todo thing and render
+                camera = camera.addAzimuth(-Math.toRadians(deX/10d));
+                camera = camera.addZenith(Math.toRadians(deY/10d));
+                //System.out.println(camera.getAzimuth());
+                Render();
+                mouse = new Point(e.getX(),e.getY());
             }
         });
 
@@ -119,6 +166,12 @@ public class Controller3D extends JFrame {
                         },0xFFFF00
                 )
         );*/
+        Render();
+        pack();
+        setVisible(true);
+    }
+    private void Render(){
+        img = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
         Mat4 mat = new Mat4Transl(new Vec3D(0,0,0));//move by screen halves
         Mat4Scale unstrech = new Mat4Scale((double)img.getHeight()/img.getWidth(),1,1);//remove stretch
         //mat = mat.mul(unstrech);//already unstretched
@@ -142,15 +195,6 @@ public class Controller3D extends JFrame {
 
         WireRenderer wireRenderer = new WireRenderer(painter);
         wireRenderer.Draw(scene.getSolids());
-
-        pack();
-        setVisible(true);
-    }
-    private void Move(int[] movement){
-        for (int i = 0; i < scene.getSolids().size();i++){
-            Mat4 mat = scene.getSolids().get(i).getModel();//todo not finished
-            new Mat4Transl(new Vec3D(movement[0],movement[1],0));
-            scene.changeModel(i,mat);
-        }
+        repaint();
     }
 }

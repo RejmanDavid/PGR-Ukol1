@@ -33,6 +33,6 @@ public class WireRenderer {
         x1 = (x1+1)*painter.img.getWidth()/2/painter.pixelSize;x2 = (x2+1)*painter.img.getWidth()/2/painter.pixelSize;
         y1 = (y1+1)*painter.img.getHeight()/2/painter.pixelSize;y2 = (y2+1)*painter.img.getHeight()/2/painter.pixelSize;
         painter.Draw((int)Math.round(x1),(int)Math.round(y1),(int)Math.round(x2),(int)Math.round(y2),color);
-        System.out.println(x1+" "+y1);
+        //System.out.println(x1+" "+y1); TODO OUT OF BOUNDS SKIP
     }
 }
