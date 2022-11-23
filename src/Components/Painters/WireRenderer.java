@@ -26,7 +26,9 @@ public class WireRenderer {
     private void paint(Point3D p1, Point3D p2, int color, Mat4 mat){
         p1=p1.mul(mat);
         p2=p2.mul(mat);
-        double x1 = p1.getX(),x2 = p2.getX();
+        p1 = p1.mul(1/p1.getW());
+        p2 = p2.mul(1/p2.getW());
+        double x1 = p1.getX(),x2 = p2.getX();//todo W is not dehomogenized
         double y1 = p1.getY(),y2 = p2.getY();
         x1 = (x1+1)*painter.img.getWidth()/2/painter.pixelSize;x2 = (x2+1)*painter.img.getWidth()/2/painter.pixelSize;
         y1 = (y1+1)*painter.img.getHeight()/2/painter.pixelSize;y2 = (y2+1)*painter.img.getHeight()/2/painter.pixelSize;
