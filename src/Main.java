@@ -1,4 +1,4 @@
-import Components.Window.PaintWindow;
+import Components.Window.Controller3D;
 
 public class Main {
     public static void main(String[] args) {

@@ -1,3 +1,5 @@
+package Components.Window;
+
 import Components.Painters.AbstractPainter;
 import Components.Painters.DottedPainter;
 import Components.Painters.WireRenderer;
