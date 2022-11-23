@@ -111,7 +111,6 @@ public class Controller3D extends JFrame {
                 if (mouse == null) {mouse = new Point(getMousePosition().x,getMousePosition().y);}
                 int deX = e.getX() - mouse.x;
                 int deY = e.getY() - mouse.y;
-                //todo thing and render
                 camera = camera.addAzimuth(-Math.toRadians(deX/10d));
                 camera = camera.addZenith(Math.toRadians(deY/10d));
                 //System.out.println(camera.getAzimuth());
