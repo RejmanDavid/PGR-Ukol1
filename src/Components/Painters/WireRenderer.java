@@ -27,18 +27,14 @@ public class WireRenderer {
         p1=p1.mul(mat);
         p2=p2.mul(mat);
 
-        if (p1.getW()<0||p2.getW()<0){return;}//this works for me so far
-        /*if (p1.getW()>1||p2.getW()>1){
-            System.out.println(p1.getW()+" "+p2.getW());
-        }//this works for me so far*/
+        if (p1.getW()<0||p2.getW()<0){return;}//this works for me so far, >1 is rare and doesn't cause any problems
         //if (-p1.getW()>= p1.getX()>= p1.getW()){dont return}//same for y, z and p2
         p1 = p1.mul(1/p1.getW());
         p2 = p2.mul(1/p2.getW());
-        double x1 = p1.getX(),x2 = p2.getX();//todo W is not dehomogenized
+        double x1 = p1.getX(),x2 = p2.getX();
         double y1 = p1.getY(),y2 = p2.getY();
         x1 = (x1+1)*painter.img.getWidth()/2/painter.pixelSize;x2 = (x2+1)*painter.img.getWidth()/2/painter.pixelSize;
         y1 = (y1+1)*painter.img.getHeight()/2/painter.pixelSize;y2 = (y2+1)*painter.img.getHeight()/2/painter.pixelSize;
         painter.Draw((int)Math.round(x1),(int)Math.round(y1),(int)Math.round(x2),(int)Math.round(y2),color);
-        //System.out.println(x1+" "+y1); TODO OUT OF BOUNDS SKIP
     }
 }

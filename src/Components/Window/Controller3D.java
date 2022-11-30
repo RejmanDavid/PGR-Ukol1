@@ -118,7 +118,10 @@ public class Controller3D extends JFrame {
             public void mouseMoved(MouseEvent e) {
                 super.mouseMoved(e);
                 if (!isFocused){return;}
-                if (mouse == null) {mouse = new Point(getMousePosition().x,getMousePosition().y);}
+                if (mouse == null) {
+                    if(getMousePosition() == null){return;}//alternative to try, because it can somehow fail
+                    mouse = new Point(getMousePosition().x,getMousePosition().y);
+                }
                 int deX = e.getX() - mouse.x;
                 int deY = e.getY() - mouse.y;
                 camera = camera.addAzimuth(-Math.toRadians(deX/10d));
