@@ -53,19 +53,11 @@ public class Controller3D extends JFrame {
             @Override
             public void keyPressed(KeyEvent e) {
                 super.keyPressed(e);
-                switch (e.getKeyChar()){
-                    case'a':
-                        camera = camera.left(0.1);
-                        break;
-                    case's':
-                        camera = camera.forward(-0.1);
-                        break;
-                    case'd':
-                        camera = camera.left(-0.1);
-                        break;
-                    case'w':
-                        camera = camera.forward(0.1);
-                        break;
+                switch (e.getKeyChar()) {
+                    case 'a' -> camera = camera.left(0.1);
+                    case 's' -> camera = camera.forward(-0.1);
+                    case 'd' -> camera = camera.left(-0.1);
+                    case 'w' -> camera = camera.forward(0.1);
                 }
                 Render();
                 //System.out.println(camera.getPosition());
@@ -172,7 +164,7 @@ public class Controller3D extends JFrame {
     private void Render(){
         img = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
         Mat4 mat = new Mat4Transl(new Vec3D(0,0,0));//move by screen halves
-        Mat4Scale unstrech = new Mat4Scale((double)img.getHeight()/img.getWidth(),1,1);//remove stretch
+        //Mat4Scale unstrech = new Mat4Scale((double)img.getHeight()/img.getWidth(),1,1);//remove stretch
         //mat = mat.mul(unstrech);//already unstretched
         Mat4Scale scale = new Mat4Scale(1,1,1);//scale from centre of screen
         mat = mat.mul(scale);
