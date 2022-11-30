@@ -183,6 +183,12 @@ public class Controller3D extends JFrame {
                 0.1,
                 100
         );
+        /*Mat4OrthoRH proj = new Mat4OrthoRH(
+                Math.toRadians(60),//also for rotation?
+                img.getHeight()/(double)img.getWidth(),
+                0.1,
+                100
+        );*/
         mat = mat.mul(camera.getViewMatrix());
         mat = mat.mul(proj);
 
