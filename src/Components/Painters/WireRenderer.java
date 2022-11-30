@@ -26,6 +26,9 @@ public class WireRenderer {
     private void paint(Point3D p1, Point3D p2, int color, Mat4 mat){
         p1=p1.mul(mat);
         p2=p2.mul(mat);
+        System.out.println(p1.getW()+" "+p2.getW());
+        if (p1.getW()<0||p2.getW()<0){return;}//this works for me so far
+        //if (-p1.getW()>= p1.getX()>= p1.getW()){dont return}//same for y, z and p2
         p1 = p1.mul(1/p1.getW());
         p2 = p2.mul(1/p2.getW());
         double x1 = p1.getX(),x2 = p2.getX();//todo W is not dehomogenized
