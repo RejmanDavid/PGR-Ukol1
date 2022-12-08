@@ -6,7 +6,7 @@ public class Solid {
     Point3D[] vertexBuffer;
     int[][] indexBuffer;
     int color;
-    private Mat4 model = new Mat4Identity();
+    private Mat4 model = null;
     public Solid(Point3D [] vb, int[][] ib,int color){
         vertexBuffer = vb;
         indexBuffer = ib;

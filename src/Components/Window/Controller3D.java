@@ -22,15 +22,20 @@ public class Controller3D extends JFrame {
     boolean isFocused = true;
     AbstractPainter painter;
     Scene scene = new Scene(new ArrayList<>());
-    Camera camera = new Camera(
+    Camera camera1st = new Camera(
             new Vec3D(-0.5,-0.5,0),//Xforward,Yleft,Zup
-            //new Vec3D(0,0,0),//for looking from the center
             Math.toRadians(45),//azimuth//left
             Math.toRadians(0),//zenith//updown
             1,true//distance for 3rd person and bool if 1st person
+    );Camera camera3rd = new Camera(
+            new Vec3D(0,0,0),//for looking from the center
+            Math.toRadians(0),//azimuth//left
+            Math.toRadians(0),//zenith//updown
+            1,false//distance for 3rd person and bool if 1st person
     );
+    Camera camera = camera1st;
 
-    public Controller3D(String title, int width, int height){
+    public Controller3D(String title, int width, int height){//todo add controls view
         super(title);
         setLayout(new BorderLayout());
         setResizable(false);
@@ -76,6 +81,8 @@ public class Controller3D extends JFrame {
                     case 'w' -> camMovement[1] = 0.02f;
                     case ' ' -> camMovement[2] = -0.02f;
                     case 'c' -> camMovement[2] = 0.02f;
+                    case '1' -> camera = camera1st;
+                    case '3' -> camera = camera3rd;
                     default -> System.out.println(e.getKeyChar());
                 }
                 //System.out.println(camera.getPosition());
@@ -133,8 +140,7 @@ public class Controller3D extends JFrame {
                 mouse = new Point(e.getX(),e.getY());
             }
         });
-
-        scene.addObject(
+        scene.addObject(//scaled cube
                 new Solid(
                         new Point3D[]{
                                 new Point3D(-0.2,-0.2,0.2),
@@ -162,6 +168,109 @@ public class Controller3D extends JFrame {
                         },0x00FFFF
                 )
         );
+        scene.addObject(//movedpyramid
+                new Solid(
+                        new Point3D[]{
+                                new Point3D(0,0,-0.2),//top
+                                new Point3D(0.2,0.2,0.2),
+                                new Point3D(0.2,-0.2,0.2),
+                                new Point3D(-0.2,-0.2,0.2),
+                                new Point3D(-0.2,0.2,0.2),
+                        },
+                        new int[][]{
+                                {1,2},
+                                {2,3},
+                                {3,4},
+                                {4,1},
+                                {0,1},
+                                {0,2},
+                                {0,3},
+                                {0,4}
+                        },0xFFFF00
+                )
+        );
+        java.util.List<Point3D> sinP = new ArrayList<>();
+        java.util.List<int[]> sinI = new ArrayList<>();
+        sinP.add(new Point3D(0,0,-0.02));
+        for (int i = 1; i < 1000; i ++){
+            sinP.add(new Point3D(i/1000d,Math.sin(i/10d)*0.02d,Math.sin((i/10d)-Math.PI/2)*0.02d));
+            sinI.add(new int[]{i-1,i});
+        }
+        Point3D[] sinPA = sinP.toArray(new Point3D[sinP.size()]);
+        int[][] sinIA = sinI.toArray(new int[sinI.size()][]);
+        scene.addObject(//rotated and moved coil
+                new Solid(
+                        sinPA,
+                        sinIA,
+                        0xAAFF00
+                )
+        );
+        scene.addObject(//axis-X
+                new Solid(
+                        new Point3D[]{
+                                new Point3D(0,0,0),
+                                new Point3D(0.2,0,0),
+                                new Point3D(0.2,0.02,0),
+                                new Point3D(0.2,-0.02,0),
+                                new Point3D(0.24,0,0),
+                                new Point3D(0.2,0,0.02),
+                                new Point3D(0.2,0,-0.02)
+                        },
+                        new int[][]{
+                                {0,1},
+                                {2,3},
+                                {3,4},
+                                {4,2},
+                                {5,6},
+                                {6,4},
+                                {4,5}
+                        },0xFF0000
+                )
+        );
+        scene.addObject(//axis-Y
+                new Solid(
+                        new Point3D[]{
+                                new Point3D(0,0,0),
+                                new Point3D(0,0.2,0),
+                                new Point3D(0.02,0.2,0),
+                                new Point3D(-0.02,0.2,0),
+                                new Point3D(0,0.24,0),
+                                new Point3D(0,0.2,0.02),
+                                new Point3D(0,0.2,-0.02)
+                        },
+                        new int[][]{
+                                {0,1},
+                                {2,3},
+                                {3,4},
+                                {4,2},
+                                {5,6},
+                                {6,4},
+                                {4,5}
+                        },0x00FF00
+                )
+        );
+        scene.addObject(//axis-Z
+                new Solid(
+                        new Point3D[]{
+                                new Point3D(0,0,0),
+                                new Point3D(0,0,0.2),
+                                new Point3D(0.02,0,0.2),
+                                new Point3D(-0.02,0,0.2),
+                                new Point3D(0,0,0.24),
+                                new Point3D(0,0.02,0.2),
+                                new Point3D(0,-0.02,0.2)
+                        },
+                        new int[][]{
+                                {0,1},
+                                {2,3},
+                                {3,4},
+                                {4,2},
+                                {5,6},
+                                {6,4},
+                                {4,5}
+                        },0x0000FF
+                )
+        );
         /*scene.addObject(
                 new Solid(
                         new Point3D[]{
@@ -186,11 +295,15 @@ public class Controller3D extends JFrame {
         //System.out.println("a:"+Math.toDegrees(camera.getAzimuth()));
 
         img = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-        Mat4 mat = new Mat4Transl(new Vec3D(0,0,0));//move by screen halves //vlastnost objektu
-        //Mat4Scale unstrech = new Mat4Scale((double)img.getHeight()/img.getWidth(),1,1);//remove stretch
-        //mat = mat.mul(unstrech);//already unstretched
-        Mat4Scale scale = new Mat4Scale(1,1,1);//scale from centre of screen //vlastnost objektu
-        mat = mat.mul(scale);
+        Mat4 defaultmat = new Mat4Transl(new Vec3D(0,0,0));//move by screen halves //vlastnost objektu
+        Mat4 pyramidmat = new Mat4Transl(new Vec3D(1,0,0));
+        Mat4 coilmat = new Mat4RotXYZ(0,Math.toRadians(45),-Math.toRadians(45));
+        coilmat = coilmat.mul(new Mat4Transl(new Vec3D(0,1,0)));
+        //Mat4Scale scale = new Mat4Scale(1,1,1);//scale from centre of screen //vlastnost objektu
+        //defaultmat = defaultmat.mul(scale);
+        Mat4 cubemat = defaultmat.mul(new Mat4Scale(0.3));
+        //pyramidmat = pyramidmat.mul(scale);
+        //coilmat = coilmat.mul(new Mat4Scale(1d));
 
         Mat4PerspRH proj = new Mat4PerspRH(//vlastnost kamery, lze predem nasobit
                 Math.toRadians(60),//also for rotation?
@@ -204,16 +317,29 @@ public class Controller3D extends JFrame {
                 0.1,
                 100
         );*/
-        mat = mat.mul(camera.getViewMatrix());//vlastnost kamery, lze predem nasobit
-        mat = mat.mul(proj);//lze obratit nasobeni ale musely by se matice transponovat
+        defaultmat = defaultmat.mul(camera.getViewMatrix());//vlastnost kamery, lze predem nasobit
+        defaultmat = defaultmat.mul(proj);//lze obratit nasobeni ale musely by se matice transponovat
+        pyramidmat = pyramidmat.mul(camera.getViewMatrix());
+        pyramidmat = pyramidmat.mul(proj);
+        coilmat = coilmat.mul(camera.getViewMatrix());
+        coilmat = coilmat.mul(proj);
+        cubemat = cubemat.mul(camera.getViewMatrix());
+        cubemat = cubemat.mul(proj);
 
         for (int i = 0; i < scene.getSolids().size();i++){
-            scene.changeModel(i,mat);
+            switch (i) {
+                //cube
+                case 0 -> scene.changeModel(i,cubemat);
+                //pyramid
+                case 1 -> scene.changeModel(i, pyramidmat);
+                //coil
+                case 2 -> scene.changeModel(i,coilmat);
+            }
         }
         AbstractPainter painter = new StraightPainter(pixelSize);
         painter.setImg(img);
 
-        WireRenderer wireRenderer = new WireRenderer(painter);
+        WireRenderer wireRenderer = new WireRenderer(painter,defaultmat);
         wireRenderer.Draw(scene.getSolids());
         repaint();
     }

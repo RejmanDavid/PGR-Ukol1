@@ -5,15 +5,19 @@ import transforms.Mat4;
 import transforms.Point3D;
 
 import java.util.List;
+import java.util.Objects;
 
 public class WireRenderer {
     AbstractPainter painter;
-    public WireRenderer(AbstractPainter painter) {
+    Mat4 defaultMat;
+    public WireRenderer(AbstractPainter painter, Mat4 mat) {
         this.painter = painter;
+        defaultMat = mat;
     }
     public void Draw(Solid s) {
         for (int[] index :
                 s.getIndexBuffer()) {
+            //System.out.println(s.getModel());
             paint(s.getVertex(index[0]),s.getVertex(index[1]),s.getColor(),s.getModel());
         }
     }
@@ -24,6 +28,7 @@ public class WireRenderer {
         }
     }
     private void paint(Point3D p1, Point3D p2, int color, Mat4 mat){
+        if (mat==null){mat = defaultMat;}
         p1=p1.mul(mat);
         p2=p2.mul(mat);
 
