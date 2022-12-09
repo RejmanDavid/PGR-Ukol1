@@ -2,7 +2,7 @@
 
 #CZ<br/>
 Tento program je úkol určený pro univerzitu UHK.<br>
-Všechen obsah složky src/transforms patří UHK a můžou se na ně vztahovat práva vlastnictví.<br>
+Všechen obsah složky src/transforms patří UHK a mohou se na ně vztahovat práva vlastnictví.<br>
 Zbytek lze libovolně využít i bez kreditace.
 
 #EN<br/>
