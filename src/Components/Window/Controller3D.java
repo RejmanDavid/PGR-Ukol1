@@ -6,6 +6,8 @@ import Components.Painters.StraightPainter;
 import Components.ThreeD.Scene;
 import Components.ThreeD.Solid;
 import transforms.*;
+
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -19,9 +21,18 @@ public class Controller3D extends JFrame {
     int pixelSize = 5;
     Point mouse;
     float[] camMovement = new float[]{0,0,0};
-    boolean isFocused = true;
+    boolean isFocused = false;
     AbstractPainter painter;
     Scene scene = new Scene(new ArrayList<>());
+    boolean isPerspective = true;
+    int selectedObject = 0;
+    JLabel rotLabelZ;
+    enum objects {
+        Cube,
+        Pyramid,
+        Coil
+    }
+
     Camera camera1st = new Camera(
             new Vec3D(-0.5,-0.5,0),//Xforward,Yleft,Zup
             Math.toRadians(45),//azimuth//left
@@ -57,6 +68,203 @@ public class Controller3D extends JFrame {
         mainPanel.requestFocus();
         mainPanel.requestFocusInWindow();
 
+        JTextArea tutorial = new JTextArea("""     
+                        move: WASD + C + SPACE
+                        click to toggle camera rotation
+                        1st/3rd person view: 1 and 3
+                        perspective/orthogonal cam: 2
+                        your mouse will flip to the
+                        other side if you move it outside""");
+        tutorial.setEditable(false);
+
+        JButton objectLabel = new JButton(String.valueOf(objects.values()[selectedObject]));
+        JButton larrow = new JButton("<");
+        JButton rarrow = new JButton(">");
+
+        JLabel posLabel = new JLabel("POSITION");
+
+        JLabel posLabelX = new JLabel("x:0.0");
+        JButton posXPlus = new JButton("+");
+        posXPlus.addActionListener(e -> {scene.moveObject(selectedObject,new Vec3D(0.1d,0,0));
+            posLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getX())/10d);
+        });
+        JButton posXMinus = new JButton("-");
+        posXMinus.addActionListener(e -> {scene.moveObject(selectedObject,new Vec3D(-0.1d,0,0));
+            posLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getX())/10d);
+        });
+        JPanel posX = new JPanel();
+        posX.add(posLabelX); posX.add(posXPlus);posX.add(posXMinus);
+
+        JLabel posLabelY = new JLabel("y:0.0");
+        JButton posYPlus = new JButton("+");
+        posYPlus.addActionListener(e -> {scene.moveObject(selectedObject,new Vec3D(0,0.1d,0));
+            posLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getY())/10d);
+        });
+        JButton posYMinus = new JButton("-");
+        posYMinus.addActionListener(e -> {scene.moveObject(selectedObject,new Vec3D(0,-0.1d,0));
+            posLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getY())/10d);
+        });
+        JPanel posY = new JPanel();
+        posY.add(posLabelY); posY.add(posYPlus);posY.add(posYMinus);
+
+        JLabel posLabelZ = new JLabel("z:0.0");
+        JButton posZPlus = new JButton("+");
+        posZPlus.addActionListener(e -> {scene.moveObject(selectedObject,new Vec3D(0,0,0.1d));
+            posLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getZ())/10d);
+        });
+        JButton posZMinus = new JButton("-");
+        posZMinus.addActionListener(e -> {scene.moveObject(selectedObject,new Vec3D(0,0,-0.1d));
+            posLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getZ())/10d);
+        });
+        JPanel posZ = new JPanel();
+        posZ.add(posLabelZ); posZ.add(posZPlus);posZ.add(posZMinus);
+
+        JLabel rotLabel = new JLabel("ROTATION");
+
+        JLabel rotLabelX = new JLabel("x:0.0");
+        JButton rotXPlus = new JButton("+");
+        rotXPlus.addActionListener(e -> {scene.rotateObject(selectedObject,Math.toRadians(5),0,0);
+            rotLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[0])/10d);
+        });
+        JButton rotXMinus = new JButton("-");
+        rotXMinus.addActionListener(e -> {scene.rotateObject(selectedObject,-Math.toRadians(5),0,0);
+            rotLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[0])/10d);
+        });
+        JPanel rotX = new JPanel();
+        rotX.add(rotLabelX); rotX.add(rotXPlus);rotX.add(rotXMinus);
+
+        JLabel rotLabelY = new JLabel("y:0.0");
+        JButton rotYPlus = new JButton("+");
+        rotYPlus.addActionListener(e -> {scene.rotateObject(selectedObject,0,Math.toRadians(5),0);
+            rotLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[1])/10d);
+        });
+        JButton rotYMinus = new JButton("-");
+        rotYMinus.addActionListener(e -> {scene.rotateObject(selectedObject,0,-Math.toRadians(5),0);
+            rotLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[1])/10d);
+        });
+        JPanel rotY = new JPanel();
+        rotY.add(rotLabelY); rotY.add(rotYPlus);rotY.add(rotYMinus);
+
+        rotLabelZ = new JLabel("z:0.0");
+        JButton rotZPlus = new JButton("+");
+        rotZPlus.addActionListener(e -> {scene.rotateObject(selectedObject,0,0,Math.toRadians(5));
+            rotLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[2])/10d);
+        });
+        JButton rotZMinus = new JButton("-");
+        rotZMinus.addActionListener(e -> {scene.rotateObject(selectedObject,0,0,-Math.toRadians(5));
+            rotLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[2])/10d);
+        });
+        JPanel rotZ = new JPanel();
+        rotZ.add(rotLabelZ); rotZ.add(rotZPlus);rotZ.add(rotZMinus);
+
+        JLabel scaleLabel = new JLabel("SIZE");
+
+        JLabel scaleLabelX = new JLabel("x:0.3");
+        JButton scaleXPlus = new JButton("+");
+        scaleXPlus.addActionListener(e -> {scene.scaleObject(selectedObject,new Vec3D(0.1d,0,0));
+            scaleLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getScale().getX())/10d);
+        });
+        JButton scaleXMinus = new JButton("-");
+        scaleXMinus.addActionListener(e -> {scene.scaleObject(selectedObject,new Vec3D(-0.1d,0,0));
+            scaleLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getScale().getX())/10d);
+        });
+        JPanel scaleX = new JPanel();
+        scaleX.add(scaleLabelX); scaleX.add(scaleXPlus);scaleX.add(scaleXMinus);
+
+        JLabel scaleLabelY = new JLabel("y:0.3");
+        JButton scaleYPlus = new JButton("+");
+        scaleYPlus.addActionListener(e -> {scene.scaleObject(selectedObject,new Vec3D(0,0.1d,0));
+            scaleLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getScale().getY())/10d);
+        });
+        JButton scaleYMinus = new JButton("-");
+        scaleYMinus.addActionListener(e -> {scene.scaleObject(selectedObject,new Vec3D(0,-0.1d,0));
+            scaleLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getScale().getY())/10d);
+        });
+        JPanel scaleY = new JPanel();
+        scaleY.add(scaleLabelY); scaleY.add(scaleYPlus);scaleY.add(scaleYMinus);
+
+        JLabel scaleLabelZ = new JLabel("z:0.3");
+        JButton scaleZPlus = new JButton("+");
+        scaleZPlus.addActionListener(e -> {scene.scaleObject(selectedObject,new Vec3D(0,0,0.1d));
+            scaleLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getScale().getZ())/10d);
+        });
+        JButton scaleZMinus = new JButton("-");
+        scaleZMinus.addActionListener(e -> {scene.scaleObject(selectedObject,new Vec3D(0,0,-0.1d));
+            scaleLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getScale().getZ())/10d);
+        });
+        JPanel scaleZ = new JPanel();
+        scaleZ.add(scaleLabelZ); scaleZ.add(scaleZPlus);scaleZ.add(scaleZMinus);
+
+        JCheckBox checkBox = new JCheckBox("animate");
+        checkBox.addActionListener(e -> {
+            scene.toggleSpin(selectedObject);
+        });
+
+        larrow.addActionListener(e -> {
+            selectedObject-=1;
+            if (selectedObject<0) {
+                selectedObject = objects.values().length-1;
+            }
+            objectLabel.setText(String.valueOf(objects.values()[selectedObject]));
+            posLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getX())/10d);
+            posLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getY())/10d);
+            posLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getZ())/10d);
+            rotLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[0])/10d);
+            rotLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[1])/10d);
+            rotLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[2])/10d);
+            scaleLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getScale().getX())/10d);
+            scaleLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getScale().getY())/10d);
+            scaleLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getScale().getZ())/10d);
+            checkBox.setSelected(scene.getSolid(selectedObject).isSpinning);
+        });
+        rarrow.addActionListener(e -> {
+            selectedObject+=1;
+            if (selectedObject>objects.values().length-1) {
+                selectedObject = 0;
+            }
+            objectLabel.setText(String.valueOf(objects.values()[selectedObject]));
+            posLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getX())/10d);
+            posLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getY())/10d);
+            posLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getPosition().getZ())/10d);
+            rotLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[0])/10d);
+            rotLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[1])/10d);
+            rotLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[2])/10d);
+            scaleLabelX.setText("x:"+Math.round(10*scene.getSolid(selectedObject).getScale().getX())/10d);
+            scaleLabelY.setText("y:"+Math.round(10*scene.getSolid(selectedObject).getScale().getY())/10d);
+            scaleLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getScale().getZ())/10d);
+            checkBox.setSelected(scene.getSolid(selectedObject).isSpinning);
+        });
+
+        JPanel sidePanel = new JPanel();
+        JPanel selection = new JPanel();
+        JPanel position = new JPanel();
+        position.setLayout(new BoxLayout(position,BoxLayout.Y_AXIS));
+
+        position.add(posLabel);
+        position.add(posX,BorderLayout.WEST);
+        position.add(posY,BorderLayout.WEST);
+        position.add(posZ,BorderLayout.WEST);
+
+        position.add(rotLabel);
+        position.add(rotX,BorderLayout.WEST);
+        position.add(rotY,BorderLayout.WEST);
+        position.add(rotZ,BorderLayout.WEST);
+
+        position.add(scaleLabel);
+        position.add(scaleX,BorderLayout.WEST);
+        position.add(scaleY,BorderLayout.WEST);
+        position.add(scaleZ,BorderLayout.WEST);
+
+        selection.add(larrow,BorderLayout.WEST);
+        selection.add(objectLabel,BorderLayout.WEST);
+        selection.add(rarrow,BorderLayout.WEST);
+        sidePanel.setPreferredSize(new Dimension(200,height));
+        sidePanel.add(selection,BorderLayout.NORTH);
+        sidePanel.add(position,BorderLayout.NORTH);
+        sidePanel.add(checkBox);
+        sidePanel.add(tutorial);
+        add(sidePanel,BorderLayout.EAST);
+
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -82,6 +290,7 @@ public class Controller3D extends JFrame {
                     case ' ' -> camMovement[2] = -0.02f;
                     case 'c' -> camMovement[2] = 0.02f;
                     case '1' -> camera = camera1st;
+                    case '2' -> isPerspective = !isPerspective;
                     case '3' -> camera = camera3rd;
                     default -> System.out.println(e.getKeyChar());
                 }
@@ -92,7 +301,16 @@ public class Controller3D extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
+                if (e.getX()>width){return;}
                 isFocused = !isFocused;
+                if (isFocused){
+                    remove(sidePanel);
+                    pack();
+                }else{
+                    add(sidePanel,BorderLayout.EAST);
+                    pack();
+                }
+                requestFocus();
             }
 
             @Override
@@ -282,9 +500,18 @@ public class Controller3D extends JFrame {
                         },0xFF0000
                 )
         );*/
+
+        //cube
+        scene.scaleObject(0,new Vec3D(-0.7d));
+        //pyramid
+        scene.moveObject(1,new Vec3D(1,0,0));
+        //coil
+        scene.moveObject(2,new Vec3D(0,1,0));
+        scene.rotateObject(2,0,Math.toRadians(45),-Math.toRadians(45));
+
         pack();
         setVisible(true);
-        javax.swing.Timer timer = new Timer(10, e -> Render());
+        Timer timer = new Timer(10, e -> Render());
         timer.start();
     }
     private void Render(){
@@ -292,54 +519,33 @@ public class Controller3D extends JFrame {
         camera = camera.forward(camMovement[1]);
         camera = camera.up(camMovement[2]);
 
-        //System.out.println("a:"+Math.toDegrees(camera.getAzimuth()));
+        if (scene.getSolid(selectedObject).isSpinning){
+            rotLabelZ.setText("z:"+Math.round(10*scene.getSolid(selectedObject).getRotation()[2])/10d);
+        }
 
         img = new BufferedImage(img.getWidth(),img.getHeight(),BufferedImage.TYPE_INT_RGB);
-        Mat4 defaultmat = new Mat4Transl(new Vec3D(0,0,0));//move by screen halves //vlastnost objektu
-        Mat4 pyramidmat = new Mat4Transl(new Vec3D(1,0,0));
-        Mat4 coilmat = new Mat4RotXYZ(0,Math.toRadians(45),-Math.toRadians(45));
-        coilmat = coilmat.mul(new Mat4Transl(new Vec3D(0,1,0)));
-        //Mat4Scale scale = new Mat4Scale(1,1,1);//scale from centre of screen //vlastnost objektu
-        //defaultmat = defaultmat.mul(scale);
-        Mat4 cubemat = defaultmat.mul(new Mat4Scale(0.3));
-        //pyramidmat = pyramidmat.mul(scale);
-        //coilmat = coilmat.mul(new Mat4Scale(1d));
 
-        Mat4PerspRH proj = new Mat4PerspRH(//vlastnost kamery, lze predem nasobit
-                Math.toRadians(60),//also for rotation?
-                img.getHeight()/(double)img.getWidth(),
-                0.1,
-                100
-        );
-        /*Mat4OrthoRH proj = new Mat4OrthoRH(
-                Math.toRadians(60),//also for rotation?
-                img.getHeight()/(double)img.getWidth(),
-                0.1,
-                100
-        );*/
-        defaultmat = defaultmat.mul(camera.getViewMatrix());//vlastnost kamery, lze predem nasobit
-        defaultmat = defaultmat.mul(proj);//lze obratit nasobeni ale musely by se matice transponovat
-        pyramidmat = pyramidmat.mul(camera.getViewMatrix());
-        pyramidmat = pyramidmat.mul(proj);
-        coilmat = coilmat.mul(camera.getViewMatrix());
-        coilmat = coilmat.mul(proj);
-        cubemat = cubemat.mul(camera.getViewMatrix());
-        cubemat = cubemat.mul(proj);
-
-        for (int i = 0; i < scene.getSolids().size();i++){
-            switch (i) {
-                //cube
-                case 0 -> scene.changeModel(i,cubemat);
-                //pyramid
-                case 1 -> scene.changeModel(i, pyramidmat);
-                //coil
-                case 2 -> scene.changeModel(i,coilmat);
-            }
+        Mat4 proj = null;
+        if (isPerspective){
+            proj = new Mat4PerspRH(//vlastnost kamery, lze predem nasobit
+                    Math.toRadians(60),//also for rotation?
+                    img.getHeight()/(double)img.getWidth(),
+                    0.1,
+                    100
+            );}else{
+            proj = new Mat4OrthoRH(
+                    Math.toRadians(60),//also for rotation?
+                    img.getHeight()/(double)img.getWidth(),
+                    0.1,
+                    100
+            );
         }
+
+
         AbstractPainter painter = new StraightPainter(pixelSize);
         painter.setImg(img);
 
-        WireRenderer wireRenderer = new WireRenderer(painter,defaultmat);
+        WireRenderer wireRenderer = new WireRenderer(painter,camera.getViewMatrix().mul(proj));
         wireRenderer.Draw(scene.getSolids());
         repaint();
     }

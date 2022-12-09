@@ -3,16 +3,16 @@ package Components.Painters;
 import Components.ThreeD.Solid;
 import transforms.Mat4;
 import transforms.Point3D;
+import transforms.Vec3D;
 
 import java.util.List;
-import java.util.Objects;
 
 public class WireRenderer {
     AbstractPainter painter;
-    Mat4 defaultMat;
+    Mat4 projectionMat;
     public WireRenderer(AbstractPainter painter, Mat4 mat) {
         this.painter = painter;
-        defaultMat = mat;
+        projectionMat = mat;
     }
     public void Draw(Solid s) {
         for (int[] index :
@@ -28,11 +28,11 @@ public class WireRenderer {
         }
     }
     private void paint(Point3D p1, Point3D p2, int color, Mat4 mat){
-        if (mat==null){mat = defaultMat;}
+        mat = mat.mul(projectionMat);
         p1=p1.mul(mat);
         p2=p2.mul(mat);
 
-        if (p1.getW()<0||p2.getW()<0){return;}//this works for me so far, >1 is rare and doesn't cause any problems
+        if (p1.getW()<0.01d||p2.getW()<0.01d){return;}//this works for me so far, >1 is rare and doesn't cause any problems
         //if (-p1.getW()>= p1.getX()>= p1.getW()){dont return}//same for y, z and p2
         p1 = p1.mul(1/p1.getW());
         p2 = p2.mul(1/p2.getW());
