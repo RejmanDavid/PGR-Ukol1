@@ -46,7 +46,7 @@ public class Controller3D extends JFrame {
     );
     Camera camera = camera1st;
 
-    public Controller3D(String title, int width, int height){//todo add controls view
+    public Controller3D(String title, int width, int height){
         super(title);
         setLayout(new BorderLayout());
         setResizable(false);
